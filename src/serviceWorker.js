@@ -20,21 +20,6 @@ const isLocalhost = Boolean(
     )
 );
 
-/* export function DevelopmentServiceWorkerRegister() {
-  const swPath = `${process.env.PUBLIC_URL}/sw-wb.js`;
-  if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'production') {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register(swPath).then(function(registration) {
-        // Registration was successful
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, function(err) {
-        // registration failed :(
-        console.log('ServiceWorker registration failed: ', err);
-      });
-    });
-  }
-} */
-
 export function register(config) {
   if ('serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
@@ -66,7 +51,10 @@ export function register(config) {
         });
       } else {
         // Is not localhost. Just register service worker
-        console.log('not on localhost');
+        console.log(
+          'App was not served by localhost. ' +
+            'An HTTPS source with a trusted certificate is required to register a service worker.'
+        );
         registerValidSW(swUrl, config);
       }
     });
