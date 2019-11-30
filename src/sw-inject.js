@@ -50,8 +50,10 @@ if (workbox) {
   */
   
   //Patients data
+
   workbox.routing.registerRoute(
-    /^http:\/\/cors-anywhere.herokuapp.com\/http:\/www.open-hospital.org\/oh-api\/patients/,
+    ///^http[s]:\/\/(.*)www\.open-hospital\.org\/oh-api\/patients/,
+    /^(https:\/\/cors-anywhere.herokuapp.com\/)?https:\/\/www.open-hospital.org\/oh-api\/patients/,
     new workbox.strategies.StaleWhileRevalidate({
     cacheName: 'patients-data',
     plugins: [
@@ -87,15 +89,7 @@ if (workbox) {
   /* 
     OTHER USEFUL CACHING RECIPES
   */
-  // Cache the Google Fonts stylesheets with a stale-while-revalidate strategy.
-  workbox.routing.registerRoute(
-    /^https:\/\/fonts\.googleapis\.com/,
-    new workbox.strategies.StaleWhileRevalidate({
-      cacheName: 'static-external-assets',
-    })
-  );
-
-  // Cache the underlying font files with a cache-first strategy for 1 year.
+  // Cache the Google Fonts stylesheets with a cache-first strategy for proper offline mode\.
   workbox.routing.registerRoute(
     /.*(?:fonts.gstatic|fonts.googleapis)\.com/,
     new workbox.strategies.CacheFirst({
@@ -105,7 +99,7 @@ if (workbox) {
           statuses: [0, 200],
         }),
         new workbox.expiration.Plugin({
-          maxAgeSeconds: 60 * 60 * 24 * 365,
+          maxAgeSeconds: 60 * 60 * 24 * 365, // Long term caching (fonts are not supposed to change frequently)
           maxEntries: 30,
         }),
       ],
