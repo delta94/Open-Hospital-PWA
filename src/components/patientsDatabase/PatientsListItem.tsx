@@ -7,6 +7,8 @@ import styles from "./styles/PatientsListItem.style";
 import { MaterialCardActionAreaRouter } from "../utils/LinkHelper";
 import { number } from 'prop-types';
 import { Patient } from 'generate';
+import blankMale from "../../assets/images/male.png";
+import blankFemale from "../../assets/images/female.png";
 
 // material imports
 import { withStyles, WithStyles } from "@material-ui/core/styles";
@@ -38,40 +40,49 @@ interface IProps {
 class PatientsListItem extends Component<IProps> {
     render() {
         const { classes } = this.props;
-        const { patientInfo } = this.props.info;
-        patientInfo.isChronic = _.sample([true, false]);
+        
+        // Augmentation
+        // data retrieved from the official API is missing some attributes.
+        // let's put something in the missing attributes so that this component can render without errors
+        let patientInfo = this.props.info;
+        if (patientInfo.isChronic == undefined) 
+            patientInfo.isChronic = _.sample([true, false]);
+        if (patientInfo.photo == undefined) 
+            patientInfo.photo = (patientInfo.sex == 'M') ?  blankMale : blankFemale;
+        
         return(
             <Grid item xs={12} sm={4}>
                 <Paper className={classes.paper}>
-                    <MaterialCardActionAreaRouter
+                    <MaterialCardActionAreaRouter       /* Patient card */
                         className={classes.cardAction}
                         component={LinkRouter}
-                        to={{ pathname: PATH_PATIENT_DETAILS }}>
+                        to={{ pathname: PATH_PATIENT_DETAILS }}
+                        >
                         <Grid container className={classes.patientContainer} justify="center" spacing={24}>
                             <Grid item xs={12}>
                                 <Typography color="inherit" className={classes.patientName}>
                                     {patientInfo.firstName} {patientInfo.secondName}
                                 </Typography>
                                 <Typography color="inherit">
-                                    PatientID: <b>{patientInfo.code}</b>
+                                    Patient ID: <b>{patientInfo.code}</b>
                                 </Typography>
                                 <Typography color="inherit">
-                                    Age: <b>{patientInfo.age}</b> &nbsp; Sex:<b>{patientInfo.sex}</b>
+                                    Age: <b>{patientInfo.age}</b> &nbsp; Sex: <b>{patientInfo.sex}</b>
                                 </Typography>
                                 <Typography color="inherit">{patientInfo.gender}</Typography>
                             </Grid>
                             <Grid item xs={12}>
-                                <Avatar alt="Remy Sharp" src={patientInfo.photo} className={classes.avatar} />
+                                <Avatar alt="OH20" src={patientInfo.photo} className={classes.avatar} />
                             </Grid>
                             <Grid item xs={12} className={classes.infoContainer}>
                                 <Typography color="inherit">
-                                    <b>Last admission:</b> 12.06.18
+                                    <b>Last admission:</b> {patientInfo.lastAdmission}
                                 </Typography>
                                 <Typography color="inherit">
-                                    <b>Reason for visit:</b> Lorem ipsum dolor sit amet, consectetur adipiscing elit
+                                    <b>Reason for visit:</b> {patientInfo.reasonOfVisit}
                                 </Typography>
                                 <Typography color="inherit">
-                                    <b>Treatment made:</b> Lorem ipsum dolor sit amet, consectetur adipiscing elit
+                                    <b>Treatment made:</b> {patientInfo.treatment}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} className={classes.infoContainer}>
@@ -84,7 +95,7 @@ class PatientsListItem extends Component<IProps> {
                             </Grid>
                         </Grid>
                     </MaterialCardActionAreaRouter>
-                    <MaterialCardActionAreaRouter
+                    {/* <MaterialCardActionAreaRouter
                         className={classes.cardAction}
                         component={LinkRouter}
                         to="/colleagues/ColleagueDetails">
@@ -119,7 +130,7 @@ class PatientsListItem extends Component<IProps> {
                                 </Grid>
                             </Grid>
                         </Grid>
-                    </MaterialCardActionAreaRouter>
+                    </MaterialCardActionAreaRouter> */}
                 </Paper>
             </Grid>
         )

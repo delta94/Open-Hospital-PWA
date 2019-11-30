@@ -127,7 +127,9 @@ export class PatientControllerApi extends runtime.BaseAPI {
             queryParameters['size'] = requestParameters.size;
         }
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        const headerParameters: runtime.HTTPHeaders = {
+            authorization: 'basic b2g6b2xkcGVhY2g1Nw==',
+        };
 
         const response = await this.request({
             path: `/patients`,

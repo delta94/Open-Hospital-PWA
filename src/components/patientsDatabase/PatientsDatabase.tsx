@@ -53,52 +53,43 @@ class PatientsDatabase extends Component<Props, State> {
         items: [],
         selectedDate: new Date(),
         isDeleteDialogOpen: false,
+        patients: new Array(),
+        visible: 2,
+        searchedValue: this.props.searchedValue
     };
    
     componentDidMount() {
         const patientController: PatientControllerApi = new PatientControllerApi();
         const requestParams: GetPatientsUsingGETRequest = { page: 1, size: 8 }
 
-        // TEST
-        const item = {
-            patientInfo: {
-                isChronic: false,
-                lastDocWhoVisitedHim: {
-                        name: "Marcus",
-                        surname: "Marcus",
-                        occupation: "Anesthesiologist",
-                        phone: "555 911 118",
-                        email: "doc@hospital.org",
-                }
-                firstName: "Antônio",
-                secondName: "Carlos Jobim",
-                code: 123456,
-                age: 87,
-                sex: "M",
-                gender: "undefined",
-                photo: null,
-                bloodType: "A+",
-                nextKin: "Jorge de Oliveira Jobim",
-                notes: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-                lastAdmission: "22.01.2019",
-                reasonOfVisit: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-                treatment: "Bloodletting"
-                address: "Rua do Catete 90, Glória, Rio de Janeiro - RJ"
+        
+        //LOAD WITH FETCH
+        /* fetch('https://cors-anywhere.herokuapp.com/https://www.open-hospital.org/oh-api/patients?page=1&size=10',
+            {
+                method: 'GET', 
+                headers: new Headers({
+                    'Authorization': 'Basic b2g6b2xkcGVhY2g1Nw==', 
+                    'mode': 'no-cors'
+                    })
+            })
+                .catch(err => console.error('Cannot fetch the patients data: '+err))
+                .then(res => res.json())
+                .then(json => {
+                    //console.log(json);
+                    this.setState({ isLoaded: true, items: json })
+                })
+                .catch(err => console.error('Misformed data: '+err));
+                 */
+
+        // USE THE REMOTE API SERVER
+        patientController.getPatientsUsingGET(requestParams).then(
+            (result) => {
+                this.setState({ isLoaded: true, items: result, });
+            },
+            (error) => {
+              this.setState({ isLoaded: true, error });
             }
-        };
-
-        const items = [item, item, item, item, item, item, item];
-        this.setState({ isLoaded: true, items, });
-        // TEST
-
-        // patientController.getPatientsUsingGET(requestParams).then(
-        //     (result) => {
-        //         this.setState({ isLoaded: true, items: result, });
-        //     },
-        //     (error) => {
-        //       this.setState({ isLoaded: true, error });
-        //     }
-        // )
+        );
     }
 
     keywordInput = (classes, classNames) => {
@@ -171,7 +162,7 @@ class PatientsDatabase extends Component<Props, State> {
                                         FIND A PATIENT
                                     </Typography>
                                     <Typography variant="inherit" className={classes.insertInfoPatients}>
-                                        Insert the information of the patient
+                                        Insert the patient's information
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -184,7 +175,7 @@ class PatientsDatabase extends Component<Props, State> {
                                 Which patient are you searching for?
                             </Typography>
                             <Typography variant="inherit" className={classes.insertInfoPatients}>
-                                Use the filter for a faster search
+                                Use the filters for a faster search
                             </Typography>
                         </Grid>
                         <Divider className={classes.divider} />

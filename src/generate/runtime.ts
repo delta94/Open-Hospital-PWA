@@ -12,7 +12,10 @@
  */
 
 
-export const BASE_PATH = "http://javadev.intesys.it:3310/oh-api".replace(/\/+$/, "");
+//export const BASE_PATH = "http://javadev.intesys.it:3310/oh-api".replace(/\/+$/, "");
+//export const BASE_PATH = "https://www.open-hospital.org/oh-api".replace(/\/+$/, ""); //OH20 official API, not yet configured to allow CORS :'(
+export const BASE_PATH = "https://cors-anywhere.herokuapp.com/https://www.open-hospital.org/oh-api".replace(/\/+$/, ""); //CORS errors workaround
+
 
 const isBlob = (value: any) => typeof Blob !== 'undefined' && value instanceof Blob;
 
