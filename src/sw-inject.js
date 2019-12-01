@@ -50,10 +50,9 @@ if (workbox) {
   */
   
   //Patients data
-
   workbox.routing.registerRoute(
     ///^http[s]:\/\/(.*)www\.open-hospital\.org\/oh-api\/patients/,
-    /^(https:\/\/cors-anywhere.herokuapp.com\/)?https:\/\/www.open-hospital.org\/oh-api\/patients/,
+    /^(https:\/\/cors-anywhere.herokuapp.com\/)?https:\/\/www.open-hospital.org\/oh-api\/patient[s]/,
     new workbox.strategies.StaleWhileRevalidate({
     cacheName: 'patients-data',
     plugins: [
@@ -61,9 +60,11 @@ if (workbox) {
         maxEntries: 120,
         maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
         }),
-      new workbox.backgroundSync.Plugin({ //only applies to the new patient form
-        //TODO
-        })
+      new workbox.cacheableResponse.Plugin({statuses: [200]}),
+      new workbox.broadcastUpdate.Plugin({
+        channelName: "patients-updates",
+        headersToCheck: ['Date']
+      })
       ],
     })
   );
@@ -78,9 +79,11 @@ if (workbox) {
         maxEntries: 60,
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
         }),
-      new workbox.backgroundSync.Plugin({ //only applies to the new patient form
-        //TODO
-        })
+      new workbox.cacheableResponse.Plugin({statuses: [200]}),
+      new workbox.broadcastUpdate.Plugin({
+        channelName: "colleagues-updates",
+        headersToCheck: ['content-length','date']
+      })
       ],
     })
   );
@@ -91,17 +94,15 @@ if (workbox) {
   */
   // Cache the Google Fonts stylesheets with a cache-first strategy for proper offline mode\.
   workbox.routing.registerRoute(
-    /.*(?:fonts.gstatic|fonts.googleapis)\.com/,
+    /https:\/\/.*(?:fonts.gstatic|fonts.googleapis)\.com/,
     new workbox.strategies.CacheFirst({
       cacheName: 'static-external-assets',
       plugins: [
-        new workbox.cacheableResponse.Plugin({
-          statuses: [0, 200],
-        }),
         new workbox.expiration.Plugin({
           maxAgeSeconds: 60 * 60 * 24 * 365, // Long term caching (fonts are not supposed to change frequently)
           maxEntries: 30,
         }),
+        new workbox.cacheableResponse.Plugin({statuses: [200]}),
       ],
     })
   );
@@ -109,4 +110,3 @@ if (workbox) {
 else {
   console.log("Workbox didn't load 😢");
 }
-
