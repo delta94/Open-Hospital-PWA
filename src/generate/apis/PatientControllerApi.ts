@@ -64,7 +64,9 @@ export class PatientControllerApi extends runtime.BaseAPI {
 
         const queryParameters: runtime.HTTPQuery = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        const headerParameters: runtime.HTTPHeaders = {
+            authorization: 'basic b2g6b2xkcGVhY2g1Nw==',
+        };
 
         const response = await this.request({
             path: `/patients/{code}`.replace(`{${"code"}}`, encodeURIComponent(String(requestParameters.code))),
@@ -93,7 +95,9 @@ export class PatientControllerApi extends runtime.BaseAPI {
 
         const queryParameters: runtime.HTTPQuery = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        const headerParameters: runtime.HTTPHeaders = {
+            authorization: 'basic b2g6b2xkcGVhY2g1Nw==',
+        };
 
         const response = await this.request({
             path: `/patients/{code}`.replace(`{${"code"}}`, encodeURIComponent(String(requestParameters.code))),
@@ -159,7 +163,9 @@ export class PatientControllerApi extends runtime.BaseAPI {
 
         const queryParameters: runtime.HTTPQuery = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        const headerParameters: runtime.HTTPHeaders = {
+            authorization: 'basic b2g6b2xkcGVhY2g1Nw==',
+        };
 
         headerParameters['Content-Type'] = 'application/json';
 
@@ -196,7 +202,9 @@ export class PatientControllerApi extends runtime.BaseAPI {
             queryParameters['name'] = requestParameters.name;
         }
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        const headerParameters: runtime.HTTPHeaders = {
+            authorization: 'basic b2g6b2xkcGVhY2g1Nw==',
+        };
 
         const response = await this.request({
             path: `/patients/search`,
@@ -230,7 +238,9 @@ export class PatientControllerApi extends runtime.BaseAPI {
 
         const queryParameters: runtime.HTTPQuery = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        const headerParameters: runtime.HTTPHeaders = {
+            authorization: 'basic b2g6b2xkcGVhY2g1Nw==',
+        };
 
         headerParameters['Content-Type'] = 'application/json';
 
