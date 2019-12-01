@@ -5,7 +5,7 @@ import { Link as LinkRouter } from 'react-router-dom';
 import { MaterialButtonRouter, MaterialLinkRouter } from '../utils/LinkHelper';
 import PatientsListItem from "./PatientsListItem";
 import styles from './styles/PatientsDatabase.style';
-import { PatientControllerApi, GetPatientsUsingGETRequest } from '../../generate/apis';
+import { PatientControllerApi, GetPatientsUsingGETRequest, GetPatientUsingGETRequest } from '../../generate/apis';
 import { Patient } from 'generate';
 import classNames from 'classnames';
 import DeletePatientDialog from "./DeletePatientDialog";
@@ -41,7 +41,7 @@ interface State {
     items: any[];
     selectedDate: any;
     patients: Array<Patient>;
-    visible: Number;
+    visible: number;
     searchedValue: String;
     isDeleteDialogOpen: boolean;
 }
@@ -57,19 +57,43 @@ class PatientsDatabase extends Component<Props, State> {
         visible: 2,
         searchedValue: this.props.searchedValue
     };
+
+
+    async updatedPatientCacheMessageHandler (event) {
+        const {cacheName, updatedUrl} = event.data.payload;
+        
+        // Do something with cacheName and updatedUrl.
+        // For example, get the cached content and update
+        // the content on the page.
+        const cache = await caches.open(cacheName);
+        const updatedResponse = await cache.match(cache.updatedUrl);
+        //const updatedText = await updatedResponse.text();
+        console.log(updatedResponse);
+        //alert("Nuovi dati aggiornati in background")
+
+
+        //Let's re-render the PatientListItem components with updated
+        //TODO
+        
+    }
+
+    UNSAFE_componentWillMount() {
+        const cacheUpdateChannel = new BroadcastChannel('patients-updates');
+        cacheUpdateChannel.addEventListener('message', async (event) => this.updatedPatientCacheMessageHandler(event));
+    }
+
    
     componentDidMount() {
         const patientController: PatientControllerApi = new PatientControllerApi();
-        const requestParams: GetPatientsUsingGETRequest = { page: 1, size: 8 }
-
+        const requestParams: GetPatientsUsingGETRequest = { page: 1, size: this.state.visible }
         
+
         //LOAD WITH FETCH
         /* fetch('https://cors-anywhere.herokuapp.com/https://www.open-hospital.org/oh-api/patients?page=1&size=10',
             {
                 method: 'GET', 
                 headers: new Headers({
                     'Authorization': 'Basic b2g6b2xkcGVhY2g1Nw==', 
-                    'mode': 'no-cors'
                     })
             })
                 .catch(err => console.error('Cannot fetch the patients data: '+err))
@@ -84,6 +108,13 @@ class PatientsDatabase extends Component<Props, State> {
         // USE THE REMOTE API SERVER
         patientController.getPatientsUsingGET(requestParams).then(
             (result) => {
+                //cache the patient json too
+                for (let p in result) {
+                    let patient = result[p]
+                    const param: GetPatientUsingGETRequest = {code: patient.code}
+                    patientController.getPatientUsingGET(param);
+                }
+                
                 this.setState({ isLoaded: true, items: result, });
             },
             (error) => {
