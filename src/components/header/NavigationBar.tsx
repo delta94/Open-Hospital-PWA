@@ -15,18 +15,20 @@ const styles = (theme: Theme) =>
     logo: {
       position: "absolute",
       display: "flex",
-      alignSelf: "center",
+      alignSelf: "flex-start",
+      marginTop: "1.3rem"
+
     },
     subApplicationBar: {
       display: "flex",
       flexGrow: 1,
       backgroundColor: theme.palette.background.paper,
-      height: 76,
+      height: 124,
       boxShadow: "0px 6px 20px rgba(0,0,0,0.1)",
-      padding: "0 24px",
+      padding: "0px 24px",
     },
     navigationBar: {
-      display: "flex",
+      //display: "flex",
       margin: "0 auto",
       maxWidth: 1440,
       alignSelf: "flex-end",
@@ -122,7 +124,7 @@ class NavigationBar extends React.Component<Props, State> {
               classes={{ root: classes.tab, selected: classes.tabSelected }}
               component={NavLink}
               to="/colleagues"
-              label="Colleagues database"
+              label="Colleagues Database"
             />
             <LinkTab
               classes={{ root: classes.tab, selected: classes.tabSelected }}
