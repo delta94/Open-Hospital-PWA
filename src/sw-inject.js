@@ -45,7 +45,7 @@ if (workbox) {
   
   
   /* 
-    DYNAMIC CACHING STRATEGIES
+    RUNTIME CACHING STRATEGIES
     Routes associated with a caching policy will be placed here
   */
   
@@ -106,6 +106,43 @@ if (workbox) {
       ],
     })
   );
+  
+  
+  
+  /* 
+    NOTIFICATIONS
+  */
+
+  self.addEventListener('notificationclick', event => {
+    const notification = event.notification;
+    const primaryKey = notification.data.primaryKey;
+    const action = event.action;
+
+    //Match action with the URL to open
+    let url = "/";
+    if (action === 'openPzDB') url = "patients-database"
+
+    if (action === 'close') {
+      notification.close();
+    } 
+    else {
+      event.waitUntil(clients.matchAll().then(clis => {
+          const client = clis.find(c => { //find an opened client
+            return c.visibilityState === 'visible';
+          });
+          if (client) { // a client instance is opened. Use it.
+            client.navigate(url);
+            client.focus();
+          } else {
+            // there are no visible windows. Open one.
+            clients.openWindow(url);
+            notification.close();
+          }
+        })
+      );
+    }
+  });
+
 }
 else {
   console.log("Workbox didn't load 😢");

@@ -58,9 +58,15 @@ class PatientsDatabase extends Component<Props, State> {
         searchedValue: this.props.searchedValue
     };
 
+    UNSAFE_componentWillMount() {
+        //Register a listener for SW cache refresh
+        const cacheUpdateChannel = new BroadcastChannel('patients-updates');
+        cacheUpdateChannel.addEventListener('message', async (event) => this.updatedPatientMessageHandler(event));
+    }
+
 
     displayNotification(title: string, bodyText: string, data: any) {
-        if (Notification.permission == 'granted') { //service worker and notification permissions are required
+        if ("serviceWorker" in navigator && Notification.permission == 'granted') { //service worker and notification permissions are required
             navigator.serviceWorker.getRegistration().then(sw => { //get the current service worker
             const options = {
                 body: bodyText,
@@ -72,18 +78,18 @@ class PatientsDatabase extends Component<Props, State> {
                     data: data
                 },       
                 actions: [ // Custom action buttons in notification
-                    {action: 'show', title: 'Vai al database pazienti'},
-                    {action: 'close', title: 'Segna come letto'},
+                    {action: 'openPzDB', title: 'Go to Patient Database'},
+                    {action: 'close', title: 'Mark as read'},
                 ]
             };
         
             sw.showNotification(title, options);
             });
         }
-        }
+    }
 
       
-    async updatedPatientMessageHandler (event: BroadcastMessageEvent) {
+    async updatedPatientMessageHandler (event) {
         const {cacheName, updatedUrl} = event.data.payload;
         // Do something with cacheName and updatedUrl.
         // For example, get the cached content and update
@@ -95,20 +101,13 @@ class PatientsDatabase extends Component<Props, State> {
         //alert("Nuovi dati aggiornati in background")
 
         //Show a notification to alert the user
-        if (Notification.permission === 'granted') {
-            
-
+        if (Notification.permission === 'granted') {            
             this.displayNotification(
                 "Patient data updated in background", 
-                "The patient data you requested was stale and an updated version has been retrieved from the server. Refresh Patient Database section to see the changes", 
+                "A patient data you recently viewed was stale and an updated version has been retrieved from the server. Refresh Patient Database to see the changes", 
                 updatedResponse);
         }
         
-    }
-
-    UNSAFE_componentWillMount() {
-        const cacheUpdateChannel = new BroadcastChannel('patients-updates');
-        cacheUpdateChannel.addEventListener('message', async (event) => this.updatedPatientMessageHandler(event));
     }
 
    
@@ -116,12 +115,18 @@ class PatientsDatabase extends Component<Props, State> {
         const patientController: PatientControllerApi = new PatientControllerApi();
         const requestParams: GetPatientsUsingGETRequest = { page: 1, size: this.state.visible }
         
-        if (Notification.permission === 'default') {
+        if ("serviceWorker" in navigator && Notification.permission === 'default') {
             Notification.requestPermission(permission => {
                 if (permission === 'granted') {
-                    this.displayNotification(
+                    /* this.displayNotification(
                         "Open Hospital 2.0", 
-                        "Ora puoi ricevere notifiche come questa ogni volta che ci sono aggiornamenti", []);
+                        "Ora puoi ricevere notifiche come questa ogni volta che ci sono aggiornamenti", []); */
+                        navigator.serviceWorker.getRegistration()
+                            .then(sw => sw.showNotification("Open Hospital 2.0", {
+                                body: "L'app ti mostrerà notifiche come questa ogni volta che ci sono aggiornamenti",
+                                icon: '../assets/images/notification-icon.png',
+                                vibrate: [100, 50, 100]
+                            })
                 }
                 else console.error("Qualcosa non va coi permessi delle notifiche");
             })
@@ -145,7 +150,7 @@ class PatientsDatabase extends Component<Props, State> {
                 .catch(err => console.error('Misformed data: '+err));
                  */
 
-        // USE THE REMOTE API SERVER
+        // LOAD WITH THE API CONTROLLER
         patientController.getPatientsUsingGET(requestParams).then(
             (result) => {
                 //cache the patient json too
