@@ -56,7 +56,7 @@ class PatientsListItem extends Component<IProps> {
                     <MaterialCardActionAreaRouter       /* Patient card */
                         className={classes.cardAction}
                         component={LinkRouter}
-                        to={{ pathname: PATH_PATIENT_DETAILS }}
+                        to={{ pathname: PATH_PATIENT_DETAILS.replace(':code',patientInfo.code) }}
                         >
                         <Grid container className={classes.patientContainer} justify="center" spacing={24}>
                             <Grid item xs={12}>

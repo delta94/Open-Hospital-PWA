@@ -47,6 +47,7 @@ interface State {
     isLoaded: boolean;
     item: Patient;
     openOptionalInfo: boolean;
+    currentPath: string;
 }
 
 interface IRouteParams {
@@ -61,12 +62,13 @@ class PatientActivityContainer extends Component<IProps> {
         error: null,
         isLoaded: false,
         openOptionalInfo: false,
+        currentPath: 'none'
     };
 
     getActivityTitle = () => {
-        const currentPath = this.props.location.pathname
+        const currentPath = this.state.currentPath;
         switch(currentPath){
-            case PATH_PATIENT_DETAILS:
+            case PATH_PATIENT_DETAILS.replace(':code',''):
                 return "Patient Details";
             case PATH_PATIENT_ADMISSION:
                 return "Patient Admission";
@@ -91,17 +93,45 @@ class PatientActivityContainer extends Component<IProps> {
         }
     }
 
+    componentWillMount() {
+        const path = this.props.location.pathname
+        const pathName = path.substring(0, path.lastIndexOf("/") + 1)
+        const code = path.substring(path.lastIndexOf("/") + 1, path.length);
+        
+        const patientFromAPI = 'https://cors-anywhere.herokuapp.com/https://www.open-hospital.org/oh-api/patients/'+code;
+        //console.log('estratto percorso '+patientFromAPI);
+
+        fetch(patientFromAPI,
+            {
+                method: 'GET', 
+                headers: new Headers({
+                    'Authorization': 'Basic b2g6b2xkcGVhY2g1Nw==', 
+                    })
+            })
+            //.catch(err => console.error('Cannot fetch the patients data: '+err))
+            .then(res => res.json())
+            .then(json => {
+                //console.log(json);
+                this.setState({ isLoaded: true, currentPath: pathName, item: json, code: code })
+            })
+            .catch(err => console.error('Misformed data: '+err));
+
+        
+        console.log('constant: '+PATH_PATIENT_DETAILS+' vs '+pathName);
+
+    }
+
     render() {
         const { classes } = this.props;
-        const patientInfo = {
-            isChronic: false,
+        const patientInfo = this.state.isLoaded ? this.state.item : {
+            /* isChronic: false,
             lastDocWhoVisitedHim: {
                 name: "Marcus",
                 surname: "Marcus",
                 occupation: "Anesthesiologist",
                 phone: "555 911 118",
                 email: "doc@hospital.org",
-            }
+            },
             firstName: "Antônio",
             secondName: "Carlos Jobim",
             code: 123456,
@@ -114,8 +144,8 @@ class PatientActivityContainer extends Component<IProps> {
             notes: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
             lastAdmission: "22.01.2019",
             reasonOfVisit: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-            treatment: "Bloodletting"
-            address: "Rua do Catete 90, Glória, Rio de Janeiro - RJ"
+            treatment: "Bloodletting",
+            address: "Rua do Catete 90, Glória, Rio de Janeiro - RJ" */
         } //TODO this data has to be fetched from store after redux's ready
         const { openOptionalInfo } = this.state;
         console.log(this.props)
@@ -136,9 +166,9 @@ class PatientActivityContainer extends Component<IProps> {
                         <Grid container item justify="center" spacing={24}>
                             <HealthInfoBar patientInfo={patientInfo}/>
                             {(() => {
-                                switch (this.props.location.pathname) {
-                                    case PATH_PATIENT_DETAILS:
-                                        return(<PatientDetails/>);
+                                switch (this.state.currentPath) {
+                                    case PATH_PATIENT_DETAILS.replace(':code',''):
+                                        return(<PatientDetails code={this.state.code} item={patientInfo}/>);
                                     case PATH_PATIENT_ADMISSION:
                                         return(<PatientAdmission/>);
                                     case PATH_PATIENT_VISIT:

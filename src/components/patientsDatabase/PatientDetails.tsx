@@ -9,6 +9,7 @@ import ListHeader from "../sharedComponents/ListHeader";
 import AppoitmentsItem from "../sharedComponents/AppointmentsItem";
 import SummaryItem from "../sharedComponents/SummaryItem";
 import Calendar from "../../shared/lib/calendar/index";
+import { PatientControllerApi, GetPatientUsingGETRequest } from '../../generate/apis';
 import { Patient } from 'generate';
 
 // material imports
@@ -42,6 +43,10 @@ interface State {
     openOptionalInfo: boolean;
 }
 
+interface Props {
+    code: number
+}
+
 interface IRouteParams {
     id: string;
 }
@@ -54,15 +59,33 @@ class PatientDetails extends Component<IProps> {
         error: null,
         isLoaded: false,
         openOptionalInfo: false,
+        item: null
     };
 
     handleClickCollapseOptionalInfo = () => {
         this.setState(state => ({ openOptionalInfo: !state.openOptionalInfo }));
     };
 
+    componentDidMount() {
+        const patientController: PatientControllerApi = new PatientControllerApi();
+        const param: GetPatientUsingGETRequest = {code: this.props.code}
+        console.log("Ricevuto il codice "+this.props.code+" da prop");
+
+        patientController.getPatientUsingGET(param).then(
+            (result) => {
+                console.log(result)
+                this.setState({ isLoaded: true, item: result });
+            },
+            (error) => {
+                console.error("cannot fetch patient: "+error);
+              this.setState({ isLoaded: true, error });
+            }
+    }
+
     render() {
         const { classes } = this.props;
-        const patientInfo = {
+        
+        const blankPatient = {
             isChronic: false,
             lastDocWhoVisitedHim: {
                 name: "Marcus",
@@ -85,7 +108,8 @@ class PatientDetails extends Component<IProps> {
             reasonOfVisit: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
             treatment: "Bloodletting"
             address: "Rua do Catete 90, Glória, Rio de Janeiro - RJ"
-        } //TODO this data has to be fetched from store after redux's ready
+        } //TODO this data has to be fetched from store after redux's ready */
+        const patientInfo = (this.state.isLoaded) ? this.state.item : blankPatient;
         const { openOptionalInfo } = this.state;
         {openOptionalInfo ? <ExpandLess /> : <ExpandMore />;}
         return (
@@ -96,7 +120,7 @@ class PatientDetails extends Component<IProps> {
                             {patientInfo.firstName} {patientInfo.secondName}
                         </Typography>
                         <Typography color="inherit" className={classes.patientAddress}>
-                            Address: <b>{patientInfo.address}</b>
+                            Address: <b>{blankPatient.address}</b>
                         </Typography>
                     </div>
                     <MaterialButtonRouter component={LinkRouter} to={PATH_PATIENT_ADMISSION} variant="outlined" color="inherit" classes={{ root: classes.admissionButton }}>
