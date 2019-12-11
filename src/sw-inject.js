@@ -53,25 +53,42 @@ if (workbox) {
   workbox.routing.registerRoute(
     ///^http[s]:\/\/(.*)www\.open-hospital\.org\/oh-api\/patients/,
     /^(https:\/\/cors-anywhere.herokuapp.com\/)?https:\/\/www.open-hospital.org\/oh-api\/patient[s]/,
-    new workbox.strategies.StaleWhileRevalidate({
-    cacheName: 'patients-data',
-    plugins: [
-      new workbox.expiration.Plugin({
-        maxEntries: 120,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
+    new workbox.strategies.NetworkFirst({
+      cacheName: 'patients-data',
+      plugins: [
+        new workbox.expiration.Plugin({
+          maxEntries: 120,
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
+          }),
+        new workbox.cacheableResponse.Plugin({statuses: [200]}),
+        new workbox.broadcastUpdate.Plugin({
+          channelName: "patients-updates",
+          headersToCheck: ['Date']
         }),
-      new workbox.cacheableResponse.Plugin({statuses: [200]}),
-      new workbox.broadcastUpdate.Plugin({
-        channelName: "patients-updates",
-        headersToCheck: ['Date']
-      })
-      ],
-    })
+        new workbox.backgroundSync.Plugin('patientsBGSYNC', {
+          maxRetentionTime: 24 * 60 // Retry for max of 24 Hours (specified in minutes)
+        })
+        ]
+      }),
+    "GET"
   );
+
+  /* //Reliable patient registration
+  workbox.routing.registerRoute(
+    ///^http[s]:\/\/(.*)www\.open-hospital\.org\/oh-api\/patients/,
+    /^(https:\/\/cors-anywhere.herokuapp.com\/)?https:\/\/www.open-hospital.org\/oh-api\/patient/,
+    new workbox.strategies.NetworkOnly(
+      plugins: [
+        new workbox.backgroundSync.Plugin('patientsBGSYNC', {
+          maxRetentionTime: 60 // Retry for max of 1 hourr
+        })
+      ]),
+    "POST"
+  ); */
 
   //Colleagues TEST
   workbox.routing.registerRoute(
-    /^https:\/\/uinames.com+\/api\//,
+    /^https:\/\/uinames.(?:test|com)\/api\/.*/,
     new workbox.strategies.StaleWhileRevalidate({ //show cache content + background update. Updated data will be served on the next visit
     cacheName: 'colleagues-test-remote-api',
     plugins: [
@@ -110,7 +127,7 @@ if (workbox) {
   
   
   /* 
-    NOTIFICATIONS
+    NOTIFICATION ACTIONS
   */
 
   self.addEventListener('notificationclick', event => {
@@ -142,6 +159,36 @@ if (workbox) {
       );
     }
   });
+
+
+  /* 
+    BACKGROUND SYNC
+    for all requests!
+  */
+/*  const queue = new workbox.backgroundSync.Queue('BGSync');
+
+ self.addEventListener('fetch', (event) => {
+   console.log(event);
+   console.log(event.request);
+   console.log(event.request.url);
+   // Clone the request to ensure it's safe to read when
+   // adding to the Queue.
+   const promiseChain = fetch(event.request.clone())
+   .then(response => {
+     //cache content for GET requests
+     if () {
+       caches.open("patients-updates").then()
+     }
+     else if () {
+       caches.open("colleagues-test-remote-api").then()
+     }
+   })
+   .catch((err) => {
+       return queue.pushRequest({request: event.request});
+   });
+ 
+   event.waitUntil(promiseChain);
+ }); */
 
 }
 else {

@@ -2,7 +2,7 @@
   "short_name": "Open Hospital 2.0",
   "name": "Open Hospital 2.0",
   "start_url": "./",
-  "display": "minimal-ui",
+  "display": "standalone",
   "theme_color": "#FF0000",
   "background_color": "#FF0000",
   "icons": [
